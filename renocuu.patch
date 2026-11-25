@@ -1,0 +1,26 @@
+--- a/linux-7.3.5/drivers/gpu/drm/amd/amdgpu/gfx_v9_0.c
++++ b/linux-7.3.5/drivers/gpu/drm/amd/amdgpu/gfx_v9_0.c
+@@ -66,6 +66,8 @@
+ #define mmGCEA_PROBE_MAP                        0x070c
+ #define mmGCEA_PROBE_MAP_BASE_IDX               0
+ 
++#define RENOIR_DEVID 0x1636
++
+ MODULE_FIRMWARE("amdgpu/vega10_ce.bin");
+ MODULE_FIRMWARE("amdgpu/vega10_pfp.bin");
+ MODULE_FIRMWARE("amdgpu/vega10_me.bin");
+@@ -7919,6 +7921,14 @@
+ 			amdgpu_gfx_select_se_sh(adev, i, j, 0xffffffff, 0);
+ 			gfx_v9_0_set_user_cu_inactive_bitmap(
+ 				adev, disable_masks[i * adev->gfx.config.max_sh_per_se + j]);
++			/* renocuu: unlocking hidden CUs */
++			if (adev->pdev->device == RENOIR_DEVID) {
++				u32 cc = RREG32_SOC15(GC, 0, mmCC_GC_SHADER_ARRAY_CONFIG);
++				cc &= ~0x00c00000u;
++				WREG32_SOC15(GC, 0, mmCC_GC_SHADER_ARRAY_CONFIG, cc);
++				dev_info(adev->dev,
++					"renocuu: CC_GC_SHADER_ARRAY_CONFIG=0x%08x\n", cc);
++			}
+ 			bitmap = gfx_v9_0_get_cu_active_bitmap(adev);
+ 
+ 			/*
